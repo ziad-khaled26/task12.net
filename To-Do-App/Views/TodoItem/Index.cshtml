@@ -1,0 +1,72 @@
+﻿@model IEnumerable<To_Do_App.Models.TodoItem>
+
+<div class="card p-4 shadow-sm mt-4" style="background: rgba(255, 255, 255, 0.95); border-radius: 15px;">
+    <h3 class="fw-bold mb-4">TodoItem List</h3>
+    
+    <div class="d-flex justify-content-between mb-3">
+        <a href="/TodoItem/Create" class="btn btn-primary">Add New Task</a>
+        <form method="get" class="d-flex" style="gap: 10px;">
+            <input type="date" name="searchDate" class="form-control" value="@ViewBag.SearchDate" />
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    <table class="table table-bordered table-hover mt-3 bg-white">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Deadline</th>
+                <th>File</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var timeRemaining = item.Deadline - DateTime.Now;
+                var isUrgent = timeRemaining.TotalHours <= 24 && timeRemaining.TotalHours > 0;
+                var rowClass = isUrgent ? "table-danger" : "";
+
+                <tr class="@rowClass" id="row-@item.Id">
+                    <td class="align-middle">@item.Title</td>
+                    <td class="align-middle">@item.Description</td>
+                    <td class="align-middle text-danger">@item.Deadline.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td class="align-middle">
+                        @if (!string.IsNullOrEmpty(item.FilePath))
+                        {
+                            <a href="@item.FilePath" download="@item.FileName" class="btn btn-success btn-sm">Download</a>
+                        }
+                    </td>
+                    <td class="align-middle">
+                        <a href="/TodoItem/Edit/@item.Id" class="btn btn-warning btn-sm text-white">Edit</a>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(@item.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="/TodoItem/Index?page=@(ViewBag.CurrentPage - 1)&searchDate=@ViewBag.SearchDate">Previous</a>
+                </li>
+            }
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="/TodoItem/Index?page=@i&searchDate=@ViewBag.SearchDate">@i</a>
+                </li>
+            }
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="/TodoItem/Index?page=@(ViewBag.CurrentPage + 1)&searchDate=@ViewBag.SearchDate">Next</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
